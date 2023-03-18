@@ -42,14 +42,3 @@
         path: /etc/hosts
         line: "{{ ip_range }}{{ item }} {{ hostname }}"
       with_sequence: start={{ start_ip }} end={{ end_ip }}
-
-    - name: Clone playbook repository
-      git:
-        repo: "https://github.com/fenkl12/ansible_pull_server.git"
-        dest: "/tmp/your_repository"
-      register: git_result
-
-    - name: Apply playbook
-      ansible_playbook:
-        playbook: "/tmp/your_repository/assign_ip.yml"
-      when: git_result.changed
