@@ -11,14 +11,19 @@
       apt_repository:
         repo: ppa:neovim-ppa/stable
         state: present
+    - name: Add Alacritty repository key
+      apt_key:
+        url: https://packages.alacritty.org/debian/alacritty.asc
+    - name: Add Alacritty repository
+      apt_repository:
+        repo: deb https://packages.alacritty.org/debian/ stable main
+        state: present
     - name: Update apt cache
       apt:
         update_cache: yes
-    - name: Install Neovim
+    - name: Install Neovim and Alacritty
       apt:
-        name: neovim
-        state: present
-    - name: Install Alacritty terminal
-      apt:
-        name: alacritty
+        name:
+          - neovim
+          - alacritty
         state: present
