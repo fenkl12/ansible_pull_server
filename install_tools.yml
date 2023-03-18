@@ -18,3 +18,7 @@
       apt:
         name: neovim
         state: present
+    - name: Install Alacritty terminal
+      apt:
+        name: alacritty
+        state: present
