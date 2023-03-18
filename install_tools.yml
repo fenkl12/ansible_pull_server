@@ -11,12 +11,9 @@
       apt_repository:
         repo: ppa:neovim-ppa/stable
         state: present
-    - name: Add Alacritty repository key
-      apt_key:
-        url: https://packages.alacritty.org/debian/alacritty.asc
-    - name: Add Alacritty repository
+    - name: Add aslatter/ppa repository
       apt_repository:
-        repo: deb https://packages.alacritty.org/debian/ stable main
+        repo: ppa:aslatter/ppa
         state: present
     - name: Update apt cache
       apt:
