@@ -1,0 +1,20 @@
+---
+- hosts: localhost
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Install software-properties-common
+      apt:
+        name: software-properties-common
+        state: present
+    - name: Add Neovim PPA repository
+      apt_repository:
+        repo: ppa:neovim-ppa/stable
+        state: present
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+    - name: Install Neovim
+      apt:
+        name: neovim
+        state: present
