@@ -1,4 +1,1 @@
-ansible-pull -U <url of your playbook repository> -i <inventory file> /etc/ansible/assign_ip.yml
-e.g.
-
-ansible-pull -U https://github.com/your_username/your_repository.git -i /etc/ansible/hosts /etc/ansible/assign_ip.yml
+ansible-pull -U https://github.com/fenkl12/ansible_pull_server.git -i /etc/ansible/hosts -d /etc/ansible/assign_ip -C master /etc/ansible/assign_ip/assign_ip.yml
