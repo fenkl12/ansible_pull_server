@@ -2,6 +2,11 @@
 - hosts: localhost
   gather_facts: no
   become: yes
+  vars_prompt:
+    - name: "reboot_system"
+      prompt: "Do you want to reboot the system? (yes/no)"
+      private: no
+      default: "no"
   tasks:
     - name: Install software-properties-common
       apt:
@@ -11,16 +16,23 @@
       apt_repository:
         repo: ppa:neovim-ppa/stable
         state: present
-    - name: Add aslatter/ppa repository
-      apt_repository:
-        repo: ppa:aslatter/ppa
-        state: present
-    - name: Update apt cache
+    - name: Install Neovim
       apt:
-        update_cache: yes
-    - name: Install Neovim and Alacritty
-      apt:
-        name:
-          - neovim
-          - alacritty
+        name: neovim
         state: present
+    - name: Install NordVPN CLI tool
+      shell: sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)
+    - name: Add current user to nordvpn group
+      user:
+        name: "{{ ansible_user }}"
+        groups: nordvpn
+        append: yes
+      become: yes
+    - name: Reboot system
+      reboot:
+        msg: "Reboot initiated by Ansible"
+        countdown: 5
+        test_command: whoami
+      become: yes
+      become_method: sudo
+      when: reboot_system == "yes"
