@@ -1,1 +1,19 @@
-i want an ansible script to stow a bashrc file that is locate in a folder called stow/bash
+---
+- hosts: localhost
+  become: yes
+  vars:
+    dotfiles_dir: "{{ playbook_dir }}/stow/bash"
+
+  tasks:
+    - name: Install stow package
+      apt:
+        name: stow
+        state: present
+
+    - name: Symlink .bashrc file
+      command: stow -t ~ bash
+      args:
+        chdir: "{{ dotfiles_dir }}"
+
+      changed_when: False
+      become_user: "{{ ansible_user }}"
