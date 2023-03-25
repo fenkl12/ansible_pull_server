@@ -7,8 +7,7 @@
     start_ip: 200
     end_ip: 250
     gateway_ip: 10.0.0.1
-    vm_name: your_vm_name
-    hostname: your_vm_hostname
+    netmask: 255.255.255.0
   tasks:
     - name: Get current network interface name
       shell: "ip route get 8.8.8.8 | awk '{print $5; exit}'"
