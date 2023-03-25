@@ -6,8 +6,8 @@
     ip_range: "10.0.3."
     start_ip: 200
     end_ip: 250
-    vm_name: "your_vm_name"
-    hostname: "your_vm_hostname"
+    vm_name: your_vm_name
+    hostname: your_vm_hostname
     gateway: "10.0.0.1"
   tasks:
     - name: Get network interface name
@@ -26,13 +26,13 @@
         line: |
           {{ iface_result.stdout }}:
             addresses:
-              - {{ item }}/24
+              - {{ ip_range }}{{ item }}/24
             gateway4: {{ gateway }}
             nameservers:
               addresses: [4.2.2.2, 8.8.8.8]
-      with_sequence: start={{ start_ip }} end={{ end_ip }} stride=1
-      when: current_ip.stdout != ip_range + item
+      with_sequence: start={{ start_ip }} end={{ end_ip }} format=d
+      when: current_ip.stdout != ip_range + str(start_ip)
 
     - name: Apply network configuration changes
       command: "netplan apply"
-      when: current_ip.stdout != ip_range + start_ip
+      when: current_ip.stdout != ip_range + str(start_ip)
