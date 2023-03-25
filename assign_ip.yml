@@ -19,34 +19,20 @@
       shell: "hostname -I | awk '{print $1}'"
       register: current_ip
 
-    - name: Create interfaces file if it does not exist
-      file:
-        path: /etc/network/interfaces
-        state: touch
-
     - name: Assign static IP address
-      loop: "{{ range(start_ip, end_ip + 1)|list }}"
-      vars:
-        assigned_ip: "{{ ip_range }}{{ item }}"
       lineinfile:
         path: /etc/network/interfaces
         line: |
           auto {{ iface_result.stdout }}
           iface {{ iface_result.stdout }} inet static
-          address {{ assigned_ip }}
+          address {{ ip_range }}{{ item }}
           netmask 255.255.255.0
           gateway {{ gateway_ip }}
-      when: current_ip.stdout != assigned_ip
+      with_sequence: start={{ start_ip }} end={{ end_ip }}
+      when: current_ip.stdout != "{{ ip_range }}{{ item }}"
 
     - name: Restart network
       service:
         name: networking
         state: restarted
       when: current_ip.stdout != "{{ ip_range }}{{ start_ip }}"
-
-    - name: Add hostname to hosts file
-      loop: "{{ range(start_ip, end_ip + 1)|list }}"
-      lineinfile:
-        path: /etc/hosts
-        line: "{{ ip_range }}{{ item }} {{ hostname }}"
-      when: current_ip.stdout == "{{ ip_range }}{{ item }}" and hostname is defined
