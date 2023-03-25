@@ -1,38 +1,31 @@
-- name: Assign IP address to VM
-  hosts: localhost
-  connection: local
-  become: yes
-  vars:
-    ip_range: "10.0.3."
-    start_ip: 200
-    end_ip: 250
-    vm_name: your_vm_name
-    hostname: your_vm_hostname
-    gateway: "10.0.0.1"
+---
+- name: Configure netplan with static IP
+  hosts: your_ubuntu_server
+  become: true
+
   tasks:
-    - name: Get network interface name
-      shell: "ip -o -4 route show to default | awk '{print $5}'"
-      register: iface_result
-      changed_when: false
+    - name: Generate random IP address
+      set_fact:
+        ip_address: "10.0.3.{{ 200 + (range(0, 50)|random) }}"
 
-    - name: Get current IP address
-      shell: "hostname -I | awk '{print $1}'"
-      register: current_ip
+    - name: Create netplan configuration file
+      copy:
+        content: |
+          network:
+            renderer: networkd
+            ethernets:
+              "{{ ansible_default_ipv4.interface }}":
+                addresses:
+                  - "{{ ip_address }}/24"
+                gateway4: 10.0.0.1
+                nameservers:
+                  addresses: [4.2.2.2, 8.8.8.8]
+                routes:
+                  - to: default
+                    via: 10.0.0.1
+            version: 2
+        dest: /etc/netplan/01-netcfg.yaml
+        mode: 0644
 
-    - name: Assign static IP address
-      lineinfile:
-        path: /etc/netplan/00-installer-config.yaml
-        insertafter: '^ethernets:$'
-        line: |
-          {{ iface_result.stdout }}:
-            addresses:
-              - {{ ip_range }}{{ item }}/24
-            gateway4: {{ gateway }}
-            nameservers:
-              addresses: [4.2.2.2, 8.8.8.8]
-      with_sequence: start={{ start_ip | string }} end={{ end_ip | string }}
-      when: current_ip.stdout != ip_range + str(start_ip)
-
-    - name: Apply network configuration changes
-      command: "netplan apply"
-      when: current_ip.stdout != ip_range + str(start_ip)
+    - name: Apply netplan configuration changes
+      command: netplan apply
