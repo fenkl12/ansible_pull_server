@@ -1,4 +1,3 @@
----
 - name: Assign IP address to VM
   hosts: localhost
   connection: local
@@ -9,6 +8,7 @@
     end_ip: 250
     vm_name: your_vm_name
     hostname: your_vm_hostname
+    gateway_ip: 10.0.0.1
   tasks:
     - name: Get network interface name
       shell: "grep -E '^iface .* inet static$' /etc/network/interfaces | awk '{print $2}'"
@@ -19,17 +19,24 @@
       shell: "hostname -I | awk '{print $1}'"
       register: current_ip
 
+    - name: Create interfaces file if it does not exist
+      file:
+        path: /etc/network/interfaces
+        state: touch
+
     - name: Assign static IP address
+      loop: "{{ range(start_ip, end_ip + 1)|list }}"
+      vars:
+        assigned_ip: "{{ ip_range }}{{ item }}"
       lineinfile:
         path: /etc/network/interfaces
         line: |
           auto {{ iface_result.stdout }}
           iface {{ iface_result.stdout }} inet static
-          address {{ ip_range }}{{ item }}
+          address {{ assigned_ip }}
           netmask 255.255.255.0
-          gateway 10.0.0.1
-      with_sequence: start={{ start_ip }} end={{ end_ip }}
-      when: current_ip.stdout != "{{ ip_range }}{{ item }}"
+          gateway {{ gateway_ip }}
+      when: current_ip.stdout != assigned_ip
 
     - name: Restart network
       service:
@@ -38,8 +45,8 @@
       when: current_ip.stdout != "{{ ip_range }}{{ start_ip }}"
 
     - name: Add hostname to hosts file
+      loop: "{{ range(start_ip, end_ip + 1)|list }}"
       lineinfile:
         path: /etc/hosts
         line: "{{ ip_range }}{{ item }} {{ hostname }}"
-      with_sequence: start={{ start_ip }} end={{ end_ip }}
-
+      when: current_ip.stdout == "{{ ip_range }}{{ item }}" and hostname is defined
