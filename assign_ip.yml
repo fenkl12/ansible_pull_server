@@ -6,41 +6,34 @@
     ip_range: 10.0.3.
     start_ip: 200
     end_ip: 250
-    gateway_ip: 10.0.0.1
-    netmask: 255.255.255.0
+    vm_name: your_vm_name
+    hostname: your_vm_hostname
+  args:
+    arg_gateway: "10.0.0.1"
   tasks:
-    - name: Get current network interface name
-      shell: "ip route get 8.8.8.8 | awk '{print $5; exit}'"
+    - name: Get network interface name
+      shell: "ip -o -4 route show to default | awk '{print $5}'"
       register: iface_result
+      changed_when: false
 
     - name: Get current IP address
       shell: "hostname -I | awk '{print $1}'"
       register: current_ip
 
-    - name: Create updated IP address configuration
-      set_fact:
-        updated_config: |
-          network:
-            version: 2
-            ethernets:
-              {{ iface_result.stdout }}:
-                dhcp4: no
-                addresses: [{{ ip_range }}{{ start_ip }}/{{ netmask }}]
-                gateway4: {{ gateway_ip }}
-                nameservers:
-                  addresses: [8.8.8.8, 8.8.4.4]
-            renderer: networkd
+    - name: Assign static IP address
+      lineinfile:
+        path: /etc/netplan/00-installer-config.yaml
+        insertafter: '^ethernets:$'
+        line: |
+          {{ iface_result.stdout }}:
+            addresses:
+              - {{ ip_range }}{{ item }}/24
+            gateway4: {{ arg_gateway }}
+            nameservers:
+              addresses: [4.2.2.2, 8.8.8.8]
+      with_sequence: start={{ start_ip }} end={{ end_ip }}
+      when: current_ip.stdout != "{{ ip_range }}{{ item }}"
 
-    - name: Replace IP address configuration in 00-installer-config.yaml
-      copy:
-        content: "{{ updated_config }}"
-        dest: /etc/netplan/00-installer-config.yaml
-
-    - name: Apply new network configuration
-      command: netplan apply
-      become: yes
-
-    - name: Restart networking service
-      service:
-        name: systemd-networkd
-        state: restarted
+    - name: Apply network configuration changes
+      command: "netplan apply"
+      when: current_ip.stdout != "{{ ip_range }}{{ start_ip }}"
