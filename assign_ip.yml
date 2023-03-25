@@ -27,7 +27,7 @@
           iface {{ iface_result.stdout }} inet static
           address {{ ip_range }}{{ item }}
           netmask 255.255.255.0
-          gateway 10.0.3.1
+          gateway 10.0.0.1
       with_sequence: start={{ start_ip }} end={{ end_ip }}
       when: current_ip.stdout != "{{ ip_range }}{{ item }}"
 
