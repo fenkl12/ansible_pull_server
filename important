@@ -1,0 +1,5 @@
+To run assign_ip:
+	- you need to run the ansible pull using suo 
+	- the ansible-pull requires a different syntax. need to add "-i local". 
+	- eg command: 
+		ansible-pull -U <URL of Git repository> -i local <name of playbook>.yaml

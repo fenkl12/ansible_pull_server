@@ -1,0 +1,8 @@
+To run assign_ip.yml
+	- need to run anisble-pull using sudo 
+	- need to include the command "-i local" in they syntax.
+	- syntax:
+		ansible-pull -U <URL of Git repository> -i local <name of playbook>.yaml
+
+____________________________________________________________________________________________
+

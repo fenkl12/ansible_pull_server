@@ -1,1 +1,0 @@
-ansible-pull -U https://github.com/fenkl12/ansible_pull_server.git -i /etc/ansible/hosts -d /etc/ansible/assign_ip -C master /etc/ansible/assign_ip/assign_ip.yml
