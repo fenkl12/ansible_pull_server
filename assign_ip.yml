@@ -33,7 +33,6 @@
 
     - name: Restart network
       service:
-        name: networking
+        name: networkd
         state: restarted
       when: current_ip.stdout != ip_range + start_ip|string
-
