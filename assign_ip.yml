@@ -30,7 +30,7 @@
             gateway4: {{ gateway }}
             nameservers:
               addresses: [4.2.2.2, 8.8.8.8]
-      with_sequence: "start={{ start_ip }} end={{ end_ip }} format=d"
+      with_sequence: start={{ start_ip | string }} end={{ end_ip | string }}
       when: current_ip.stdout != ip_range + str(start_ip)
 
     - name: Apply network configuration changes
