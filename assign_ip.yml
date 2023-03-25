@@ -29,10 +29,11 @@
           netmask 255.255.255.0
           gateway {{ gateway_ip }}
       with_sequence: start={{ start_ip }} end={{ end_ip }}
-      when: current_ip.stdout != "{{ ip_range }}{{ item }}"
+      when: current_ip.stdout != ip_range + item|string
 
     - name: Restart network
       service:
         name: networking
         state: restarted
-      when: current_ip.stdout != "{{ ip_range }}{{ start_ip }}"
+      when: current_ip.stdout != ip_range + start_ip|string
+
