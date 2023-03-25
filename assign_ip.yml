@@ -1,5 +1,21 @@
 ---
 - name: Configure netplan with static IP
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  tasks:
+    - name: Get current machine IP address
+      set_fact:
+        current_ip: "{{ ansible_default_ipv4.address }}"
+
+    - name: Add current machine to playbook inventory
+      add_host:
+        name: "{{ current_ip }}"
+        groups: your_ubuntu_servers
+
+- name: Apply netplan configuration
+  hosts: your_ubuntu_servers
   become: true
 
   tasks:
