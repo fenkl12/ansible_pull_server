@@ -6,33 +6,42 @@
     ip_range: 10.0.3.
     start_ip: 200
     end_ip: 250
+    gateway_ip: 10.0.0.1
     vm_name: your_vm_name
     hostname: your_vm_hostname
-    gateway_ip: 10.0.0.1
   tasks:
-    - name: Get network interface name
-      shell: "grep -E '^iface .* inet static$' /etc/network/interfaces | awk '{print $2}'"
+    - name: Get current network interface name
+      shell: "ip route get 8.8.8.8 | awk '{print $5; exit}'"
       register: iface_result
-      changed_when: false
 
     - name: Get current IP address
       shell: "hostname -I | awk '{print $1}'"
       register: current_ip
 
-    - name: Assign static IP address
-      lineinfile:
-        path: /etc/network/interfaces
-        line: |
-          auto {{ iface_result.stdout }}
-          iface {{ iface_result.stdout }} inet static
-          address {{ ip_range }}{{ item }}
-          netmask 255.255.255.0
-          gateway {{ gateway_ip }}
-      with_sequence: start={{ start_ip }} end={{ end_ip }}
-      when: current_ip.stdout != ip_range + item|string
+    - name: Create updated IP address configuration
+      set_fact:
+        updated_config: |
+          network:
+            version: 2
+            ethernets:
+              {{ iface_result.stdout }}:
+                dhcp4: no
+                addresses: [{{ ip_range }}{{ start_ip }}/{{ netmask }}]
+                gateway4: {{ gateway_ip }}
+                nameservers:
+                  addresses: [8.8.8.8, 8.8.4.4]
+            renderer: networkd
 
-    - name: Restart network
+    - name: Replace IP address configuration in 00-installer-config.yaml
+      copy:
+        content: "{{ updated_config }}"
+        dest: /etc/netplan/00-installer-config.yaml
+
+    - name: Apply new network configuration
+      command: netplan apply
+      become: yes
+
+    - name: Restart networking service
       service:
-        name: networkd
+        name: systemd-networkd
         state: restarted
-      when: current_ip.stdout != ip_range + start_ip|string
