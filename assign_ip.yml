@@ -1,24 +1,13 @@
 ---
 - name: Configure netplan with static IP
   hosts: localhost
-  connection: local
-  gather_facts: true
-
-  tasks:
-    - name: Get current machine IP address
-      set_fact:
-        current_ip: "{{ ansible_default_ipv4.address }}"
-
-    - name: Add current machine to playbook inventory
-      add_host:
-        name: "{{ current_ip }}"
-        groups: your_ubuntu_servers
-
-- name: Apply netplan configuration
-  hosts: your_ubuntu_servers
   become: true
 
   tasks:
+    - name: Get default IPv4 interface name
+      set_fact:
+        default_ipv4_interface: "{{ ansible_default_ipv4.interface }}"
+
     - name: Generate random IP address
       set_fact:
         ip_address: "10.0.3.{{ 200 + (range(0, 50)|random) }}"
@@ -29,7 +18,7 @@
           network:
             renderer: networkd
             ethernets:
-              "{{ ansible_default_ipv4.interface }}":
+              "{{ default_ipv4_interface }}":
                 addresses:
                   - "{{ ip_address }}/24"
                 gateway4: 10.0.0.1
