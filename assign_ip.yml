@@ -1,16 +1,17 @@
----
 - name: Configure netplan with static IP
   hosts: localhost
+  connection: local
   become: true
 
   tasks:
-    - name: Get default IPv4 interface name
-      set_fact:
-        default_ipv4_interface: "{{ ansible_default_ipv4.interface }}"
-
     - name: Generate random IP address
       set_fact:
         ip_address: "10.0.3.{{ 200 + (range(0, 50)|random) }}"
+
+    - name: Get default interface name
+      shell: ip route | awk '/^default/ {print $5}'
+      register: default_interface
+      changed_when: false
 
     - name: Create netplan configuration file
       copy:
@@ -18,7 +19,7 @@
           network:
             renderer: networkd
             ethernets:
-              "{{ default_ipv4_interface }}":
+              "{{ default_interface.stdout }}":
                 addresses:
                   - "{{ ip_address }}/24"
                 gateway4: 10.0.0.1
