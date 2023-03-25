@@ -1,4 +1,3 @@
 ---
-- import_playbook: assign_ip.yml
 - import_playbook: install_tools.yml
 - import_playbook: stow_bashrc.yml
