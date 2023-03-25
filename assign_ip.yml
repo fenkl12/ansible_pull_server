@@ -1,6 +1,5 @@
 ---
 - name: Configure netplan with static IP
-  hosts: your_ubuntu_server
   become: true
 
   tasks:
