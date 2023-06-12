@@ -1,0 +1,15 @@
+---
+- name: Install Alacritty
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Add Alacritty PPA
+      apt_repository:
+        repo: ppa:aslatter/ppa
+        state: present
+
+    - name: Install Alacritty
+      apt:
+        name: alacritty
+        state: present

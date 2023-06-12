@@ -1,0 +1,10 @@
+---
+- name: Install feh
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Install feh package
+      apt:
+        name: feh
+        state: present

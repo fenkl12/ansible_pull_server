@@ -1,0 +1,14 @@
+---
+- name: Install NordVPN CLI
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Install NordVPN CLI tool
+      shell: sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)
+    - name: Add current user to nordvpn group
+      user:
+        name: "{{ ansible_user }}"
+        groups: nordvpn
+        append: yes
+      become: yes

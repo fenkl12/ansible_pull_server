@@ -1,0 +1,16 @@
+---
+- name: Install GCC
+  hosts: localhost
+  become: yes
+  
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      become: yes
+  
+    - name: Install GCC
+      apt:
+        name: gcc
+        state: present
+      become: yes

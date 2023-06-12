@@ -1,0 +1,18 @@
+---
+- name: Install git and stow
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Install stow and git
+      apt:
+        name:
+          - stow
+          - git
+        state: present
+      become: true

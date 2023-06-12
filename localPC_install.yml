@@ -1,0 +1,8 @@
+---
+- import_playbook: alacritty.yml
+- import_playbook: feh.yml
+- import_playbook: gcc.yml
+- import_playbook: git_stow.yml
+- import_playbook: neovim.yml
+- import_playbook: nordvpn.yml
+- import_playbook: vscode.yml
